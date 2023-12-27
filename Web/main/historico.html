@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Histórico de Temperatura e Umidade</title>
+    <link rel="stylesheet" href="css/historico.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+</head>
+
+<body>
+    <h1 style="margin: 10px 0px 0px 0px;">Histórico de Temperatura e Umidade</h1>
+    <div class="flex">
+        <input type="date" id="startDate">
+        <input type="date" id="endDate">
+        <button id="loadDataButton">Filtrar</button>
+    </div>
+    <div id="filterModal" class="modal">
+        <div class="modal-content">
+            <div class="filter-btns">
+                <button onclick="setDateFilter(3)">Últimos 3 Dias</button>
+                <button onclick="setDateFilter(7)">Últimos 7 Dias</button>
+                <button onclick="setDateFilter(14)">Últimos 14 Dias</button>
+                <button onclick="setDateFilter(30)">Últimos 30 Dias</button>
+                <button onclick="setDateFilter(45)">Últimos 45 Dias</button>
+                <button onclick="setDateFilter(60)">Últimos 60 Dias</button>
+            </div>
+        </div>
+    </div>
+    <button id="openModalBtn">Abrir Filtros</button>
+
+    <div id="chart-container">
+        <canvas id="tempHumidityChart"></canvas>
+    </div>
+    <div class="flex">
+        <button class="exp" onclick="exportData()">Exp. como Imagem</button>
+        <button class="exp" onclick="exportDataXlsx()">Exp. como Excel</button>
+    </div>
+    <p class="aviso">*Alguns dados podem estar faltando na visualização, isto se deve a forma que o programa trabalha. Porém ao <b>Exportar como Excel</b> todos os dados registrados estarão presentes.</p>
+    <p class="avisotelapequena"><b>A tela é muito pequena para exibir o gráfico!</b><br>Por favor, aumente a tela ou acesse de um dispositivo maior.<br><br><b>Tamanho adequado: Acima de 340x550 pixels.</b>
+    </p>
+
+    <script src="js/historico.js"></script>
+</body>
+
+</html>

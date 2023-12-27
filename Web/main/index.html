@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sensores Aviário</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+  <script src="js/index.js"></script>
+</head>
+
+<body>
+  <div id="loader" class="loader"></div>
+  <div id="content" style="display: none;">
+    <div class="sensor" id="sensor1">
+      <h2>Sensor 1</h2>
+      <div class="sensor-data">
+        <i class="fa-solid fa-temperature-half"></i>
+        <p>
+          <span id="temp1"></span>
+          <img src="alert.ico" id="temp1alert" class="alert-icon" alt="Alerta">
+        </p>
+      </div>
+      <div class="sensor-data">
+        <i class="fa-solid fa-droplet"></i>
+        <p>
+          <span id="hum1"></span>
+          <img src="alert.ico" id="alert1" class="alert-icon" alt="Alerta">
+        </p>
+      </div>
+      <p id="local">localização: 25m</p>
+    </div>
+    <div class="sensor" id="sensor2">
+      <h2>Sensor 2</h2>
+      <div class="sensor-data">
+        <i class="fa-solid fa-temperature-half"></i>
+        <p>
+          <span id="temp2"></span>
+          <img src="alert.ico" id="temp2alert" class="alert-icon" alt="Alerta">
+        </p>
+      </div>
+      <div class="sensor-data">
+        <i class="fa-solid fa-droplet"></i>
+        <p>
+          <span id="hum2"></span>
+          <img src="alert.ico" id="alert2" class="alert-icon" alt="Alerta">
+        </p>
+      </div>
+      <p id="local">localização: 50m</p>
+    </div>
+    <div class="sensor" id="sensor3">
+      <h2>Sensor 3</h2>
+      <div class="sensor-data">
+        <i class="fa-solid fa-temperature-half"></i>
+        <p>
+          <span id="temp3"></span>
+          <img src="alert.ico" id="temp3alert" class="alert-icon" alt="Alerta">
+        </p>
+      </div>
+      <div class="sensor-data">
+        <i class="fa-solid fa-droplet"></i>
+        <p>
+          <span id="hum3"></span>
+          <img src="alert.ico" id="alert3" class="alert-icon" alt="Alerta">
+        </p>
+      </div>
+      <p id="local">localização: 75m</p>
+    </div>
+    <p class="aviso">*Os dados são atualizados automaticamente a cada 10 segundos.</p>
+
+    <div class="btnincdec">
+      <button id="increaseFont">Aumentar Fonte</button>
+      <button id="decreaseFont">Diminuir Fonte</button>
+      <button id="resetFont">Resetar Fonte</button>
+    </div>
+
+    <div class="historico">
+      <h2 onclick="toggleHistorico()">Ver Histórico</h2>
+      <canvas id="sensorChart"></canvas>
+      <div class="button">
+        <button class="btnzoomr" onclick="resetZoom()">Resetar Zoom</button>
+        <button onclick="togglePopup()" class="dropbtn" style="margin: 0px 5px 0px 5px;">Exportar</button>
+        <div id="exportPopup" class="popup">
+          <div class="popup-content">
+            <span class="close-btn" onclick="togglePopup()">&times;</span>
+            <div class="exportar">
+              <h3>Exportar</h3>
+              <button onclick="exportData()">Exportar como Imagem</button>
+              <button onclick="exportDataXlsx()">Exportar como Excel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="btn-historico-detalhado">
+        <a href="/historico.html" target="_blank">
+          <button>Histórico Detalhado</button>
+        </a>
+      </div>
+      <p class="aviso avisoh">*Os dados de histórico são uma média do dia</p>
+    </div>
+  </div>
+</body>
+
+</html>

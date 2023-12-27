@@ -1,0 +1,4 @@
+schedule==1.2.1
+requests==2.31.0
+selenium==4.0.0
+pyperclip==1.8.2
