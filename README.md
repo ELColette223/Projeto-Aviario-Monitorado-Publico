@@ -35,8 +35,8 @@ O código do ESP32 pode ser utilizado em dispositivos semelhantes, como o ESP826
 ## Manual de Instalação
 
 1. Instale o [MicroPython](https://micropython.org/download/) em seu ESP.
-2. Faça as modificações necessárias no código e hardware para o seu ESP.
-3. Envie os arquivos `boot.py` e `main.py`.
+2. Faça as modificações necessárias no código e hardware para o seu ESP (Led Pins e seleção de DHT).
+3. Envie os arquivos `boot.py` e `main.py` para seu ESP, recomendo utilizar o [Thonny](https://thonny.org/).
 4. Envie os arquivos da pasta `Web/main` para o seu servidor, local ou web.
 5. No SQL, crie uma tabela chamada `sensor_data` com os campos `id` (primary Auto Increment), `sensors_json` (JSON utf8mb4_bin) e `timestamp` (datetime). Alternativamente, importe o arquivo `dump.sql`.
 6. Modifique o IP em `js/index.js`.
