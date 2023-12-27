@@ -108,7 +108,7 @@ def check_conditions(data):
     return base_message
 
 def send_whatsapp_message(phone_number, message):
-    profile_path = "C:/Users/henng/Documents/Projeto Aviario Monitorado/python/GoogleChromePortable64/App/DefaultData/profile/Default"
+    profile_path = "GoogleChromePortable64/App/DefaultData/profile/Default"
     options = Options()
     options.binary_location = PATH_CHROME_PORTABLE
     options.add_argument('--user-data-dir=' + profile_path)
