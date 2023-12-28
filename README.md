@@ -5,7 +5,8 @@ Este projeto de monitoramento de Temperatura e Umidade foi desenvolvido para avi
 ## Hardware Utilizado
 
 - ESP32_universal_V4
-- DHT22 (também compatível com DHT11)
+- [DHT22](https://drive.google.com/file/d/1T-D9HKNLSp9QoKesiYCRFFy9T8083udV/view?usp=sharing) (também compatível com DHT11)
+- 3x Resistores 5.6k [Explicação na página 4 do datasheet do DHT22](https://drive.google.com/file/d/1T-D9HKNLSp9QoKesiYCRFFy9T8083udV/view?usp=sharing).
 - LED 3mm 5V
 
 ### Hardwares Compatíveis
@@ -59,7 +60,7 @@ O código do ESP32 pode ser utilizado em dispositivos semelhantes, como o ESP826
 
 <details>
   <summary>Clique para ver a representação em imagem</summary>
-  <img src="https://i.ibb.co/Xy0wjYV/hardware.png" alt="hardware" width="35%"><br>
+  <img src="https://i.ibb.co/M55KXt2/1.png" alt="hardware" width="35%"><br>
   OBS: Alterações na ligação do hardware exigirão ajustes correspondentes no código.
 </details>
 
