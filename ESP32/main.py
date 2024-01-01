@@ -13,9 +13,9 @@ ssid = 'SSID_REDE'
 password = 'SENHA_REDE'
 
 # Define o IP do ESP
-ip = '192.168.0.219' # IP de operação do ESP
-netmask = '255.255.255.0' # Mascara da sua rede
-gateway = '192.168.0.1' # Seu Gateway
+ip = '' # IP de operação do ESP
+netmask = '' # Mascara da sua rede
+gateway = '' # Seu Gateway
 dns = '8.8.8.8' # Google DNS
 
 station = network.WLAN(network.STA_IF)

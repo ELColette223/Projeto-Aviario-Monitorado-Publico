@@ -157,6 +157,10 @@ button#openModalBtn {
         margin: 0;
     }
 
+    .flex {
+        width: 110% !important;
+    }
+
     p.avisotelapequena {
         display: none;
     }

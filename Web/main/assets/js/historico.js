@@ -16,7 +16,7 @@ let rawDataForExport = [];
 const processDailyAverage = (rawData) => {
     const dailyData = {};
     rawData.forEach(entry => {
-
+        
         if (!entry || !entry.temperature || !entry.humidity) return;
 
         const date = entry.date.split(' ')[0];
@@ -81,7 +81,7 @@ const loadData = async () => {
     }
 
     try {
-        const response = await axios.get('http://SEU_IP/api.php?raw');
+        const response = await axios.get('https://SEU_IP/api.php?raw=full');
         const rawData = processAPIData(response.data, startDate, endDate);
         const data = processDailyAverage(rawData);
         rawDataForExport = processRawDataForExport(response.data);
@@ -110,21 +110,27 @@ const processAPIData = (apiData, startDate, endDate) => {
             let totalTemp = 0, totalHumidity = 0, count = 0;
             for (const sensorId in entry.sensors) {
                 const sensor = entry.sensors[sensorId];
-                totalTemp += parseFloat(sensor.temperatura.replace('°C', ''));
-                totalHumidity += parseFloat(sensor.umidade.replace('%', ''));
-                count++;
+
+                if (sensor.temperatura && sensor.umidade) {
+                    totalTemp += parseFloat(sensor.temperatura.replace('°C', ''));
+                    totalHumidity += parseFloat(sensor.umidade.replace('%', ''));
+                    count++;
+                }
             }
 
-            processedData.push({
-                date: entry.time.data,
-                temperature: (totalTemp / count).toFixed(2),
-                humidity: (totalHumidity / count).toFixed(2)
-            });
+            if (count > 0) {
+                processedData.push({
+                    date: entry.time.data,
+                    temperature: (totalTemp / count).toFixed(2),
+                    humidity: (totalHumidity / count).toFixed(2)
+                });
+            }
         }
     }
 
     return processedData.sort((a, b) => new Date(a.date) - new Date(b.date));
 };
+
 
 const getDummyData = async (startDate, endDate) => {
     const start = new Date(startDate);
@@ -150,7 +156,7 @@ const updateChart = (chart, labels, tempData, humidityData) => {
 const setDateFilter = (days) => {
     const endDate = new Date();
     const startDate = new Date();
-    startDate.setDate(endDate.getDate() - days);
+    startDate.setDate(endDate.getDate() - days + 1);
 
     document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
     document.getElementById('endDate').value = endDate.toISOString().split('T')[0];
@@ -184,7 +190,7 @@ window.exportData = function() {
 
 window.exportDataXlsx = async function() {
     try {
-        const response = await axios.get('http://SEU_IP/api.php?raw=full');
+        const response = await axios.get('https://SEU_IP/api.php?raw=full');
         const rawData = response.data;
 
         let worksheet_data = [];
@@ -268,6 +274,7 @@ const tempHumidityChart = new Chart(ctx, {
             maintainAspectRatio: true,
             scales: {
                 y: {
+                    beginAtZero: true,
                     type: 'linear',
                     display: true,
                     position: 'left',

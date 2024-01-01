@@ -13,7 +13,7 @@ def debug_print(message):
     if DEBUG:
         print(message)
     if DEBUG_FILE:
-        with open('debug-auto_send.txt', 'a') as file:
+        with open('debug-auto_send.txt', 'a', encoding='utf-8') as file:
             current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             file.write(f"{current_time}: {message}\n")
 
@@ -21,7 +21,7 @@ def executar_script():
     subprocess.run(["python", "notifica.py"])
 
 def carregar_horarios():
-    with open('horarios.json', 'r') as file:
+    with open('config.json', 'r') as file:
         data = json.load(file)
         return data["horarios"]
 

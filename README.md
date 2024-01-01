@@ -36,25 +36,23 @@ O código do ESP32 pode ser utilizado em dispositivos semelhantes, como o ESP826
 ## Manual de Instalação
 
 1. Instale o [MicroPython](https://micropython.org/download/) em seu ESP.
-2. Faça as modificações necessárias no código e hardware para o seu ESP (Led Pins e seleção de DHT).
-3. Envie os arquivos `boot.py` e `main.py` para seu ESP, recomendo utilizar o [Thonny](https://thonny.org/).
+2. Faça as modificações necessárias no código e hardware para o seu ESP.
+3. Envie os arquivos `boot.py` e `main.py`.
 4. Envie os arquivos da pasta `Web/main` para o seu servidor, local ou web.
 5. No SQL, crie uma tabela chamada `sensor_data` com os campos `id` (primary Auto Increment), `sensors_json` (JSON utf8mb4_bin) e `timestamp` (datetime). Alternativamente, importe o arquivo `dump.sql`.
 6. Modifique o IP em `js/index.js`.
 7. Modifique os IPs em `js/historico.js`.
-8. Atualize os dados de IP e SQL em `config.php`.
-9. Atualize o Token de segurança em `data/collect_data.php`.
-10. Instale a tarefa cron em seu servidor com o comando `0 * * * * /usr/bin/php /data/collect_data.php?key=TOKENSUPERSEGURO` para coleta automática de dados do ESP para o banco de dados.
-11. Instale o [Python](https://www.python.org/downloads/) em seu PC (Instalação completa).
-12. Baixe o [GoogleChromePortable64bits](https://drive.google.com/drive/folders/1tqb3kwqh1bLzXfG6TEc1eh6VbYTOq1zP?usp=sharing) ou [GoogleChromePortable32bits](https://drive.google.com/drive/folders/1XnBIfTEyFtG0BScimzkZAEFDWuZ0OWgt?usp=sharing) e coloque na pasta `python`.
-13. Na pasta `python`, altere o arquivo `horarios.json` conforme necessário.
-14. Execute o CMD na pasta `python`.
-15. Execute o comando `pip install -r requirements.txt`.
-16. Mude o caminho dos seguintes em `notifica.py` (se necessário): **PATH_CHROMEDRIVER** e **PATH_CHROME_PORTABLE**, escolha entre 32 ou 64 bits para **PATH_CHROME_PORTABLE**
-17. Em primeiro momento inicie o script `notifica.py`, leia o QR Code do WhatsApp para vincula-lo. (Necessário fazer isso apenas uma vez).
-18. Execute o arquivo `PAM-Auto-WhatsApp.bat` para rodar continuamente o script de envio. (Apenas Windows).
-19. Para manter a continuidade, crie um atalho de `PAM-Auto-WhatsApp.bat` e coloque em `C:\Users\SEU-USER\AppData\Roaming\Microsoft\Windows\Start Menu\Programs`.
-20. Após esses passos, o sistema estará configurado!
+8. Atualize os dados de `config.php`.
+9. Instale a tarefa cron em seu servidor com o comando `0 * * * * /usr/bin/php /data/collect_data.php` para coleta automática de dados do ESP para o banco de dados.
+10. Instale o [Python](https://www.python.org/downloads/) em seu PC (Instalação completa).
+10. Baixe o [GoogleChromePortable64bits](https://drive.google.com/drive/folders/1tqb3kwqh1bLzXfG6TEc1eh6VbYTOq1zP?usp=sharing) ou [GoogleChromePortable32bits](https://drive.google.com/drive/folders/1XnBIfTEyFtG0BScimzkZAEFDWuZ0OWgt?usp=sharing) e coloque na pasta `python`.
+11. Na pasta `python`, altere o arquivo `config.json` conforme necessário. Não esqueça de alterar **PATH_CHROMEDRIVER** e **PATH_CHROME_PORTABLE**, escolha entre 32 ou 64 bits para **PATH_CHROME_PORTABLE**
+11. Execute o CMD na pasta `python`.
+12. Execute o comando `pip install -r requirements.txt`.
+13. Em primeiro momento inicie o script `notifica.py`, leia o QR Code do WhatsApp para vincula-lo. (Necessário fazer isso apenas uma vez).
+13. Execute o arquivo `PAM-Auto-WhatsApp.bat` para rodar continuamente o script de envio. (Apenas Windows).
+14. Para manter a continuidade, crie um atalho de `PAM-Auto-WhatsApp.bat` e coloque em `C:\Users\SEU-USER\AppData\Roaming\Microsoft\Windows\Start Menu\Programs`.
+14. Após esses passos, o sistema estará configurado!
 
 ## Esquema de Hardware
 
@@ -79,6 +77,25 @@ O código do ESP32 pode ser utilizado em dispositivos semelhantes, como o ESP826
 - **Led Piscou 4x Longo 4x Curto**: Não foi possível se conectar com a internet
 
 ## Changelog
+
+### 1.6.0p - 1-Jan-2024 🎉
+Web Log:
+- Estrutura dos arquivos atualizada e corrigida.
+- Bug corrigido: Cor não muda ao aparecer "ERRO".
+- Bug corrigido: Alerta não some após parecer "ERRO".
+
+- Atualização da API Bridge para v1.2.0:
+    - Correção: Média sendo calculada com dados vazios.
+    - Adição: Dados inválidos agora são ignorados.
+- Adição: Arquivo controller/controller.php para armazenar funções reutilizáveis.
+- Adição: .htaccess para prevenir acesso não autorizado os debugs.
+- Adição: Sistema de cache com Redis para prevenir sobrecarga do ESP.
+
+Geral:
+- Adição: Possibilidade de debug geral. (Defina em config.php).
+
+Python Log:
+- Mudança: Configurações agora ficam no arquivo config.json para facilitar updates.
 
 ### v1.5.0p - 26-Dez-2023
 Web Log:

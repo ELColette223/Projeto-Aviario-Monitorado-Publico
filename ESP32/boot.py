@@ -12,7 +12,6 @@ import ujson
 import machine
 import dht
 import gc
-import uping
 
 led = machine.Pin(16, machine.Pin.OUT)
 

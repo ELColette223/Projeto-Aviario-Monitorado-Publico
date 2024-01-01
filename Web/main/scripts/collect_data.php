@@ -5,7 +5,7 @@
  * RECOMENDADO: Rodar a cada 1 Hora
  *
  * Para configurar o cron job, use:
- * 0 * * * * /usr/bin/php /data/collect_data.php?key=TOKENSUPERSEGURO
+ * 0 * * * * /usr/bin/php /scripts/collect_data.php?key=TOKENSUPERSEGURO
  */
 
 include "../config.php";

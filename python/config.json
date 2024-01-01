@@ -1,0 +1,11 @@
+{
+    "horarios": ["00:00:00", "04:40:00", "06:30:00", "09:30:00", "12:00:00", "15:45:00", "18:00:00", "20:00:00"],
+    
+    "api_url": "https://SEU_IP/bridge.php",
+    "phone_number": "SEU_NUMERO_AQUI",
+    "sensor_id": "media",
+
+    "PATH_CHROMEDRIVER": "chromedriver.exe",
+    "PATH_CHROME_PORTABLE": "GoogleChromePortable/GoogleChromePortable.exe",
+    "PROFILE_PATH": "GoogleChromePortable/Data/Profile"
+}

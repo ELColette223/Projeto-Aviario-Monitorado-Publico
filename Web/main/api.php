@@ -7,7 +7,7 @@
 
 header("Content-Type: application/json");
 
-require 'config.php';
+require 'controller/functions.php';
 
 // Limitação de acesso
 if (LIMIT_ACCESS) {

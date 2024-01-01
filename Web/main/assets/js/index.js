@@ -4,7 +4,7 @@ window.addEventListener('load', function() {
 });
 
 function fetchSensorData() {
-    const url = 'http://SEU_IP/bridge.php';
+    const url = 'https://SEU_IP/bridge.php';
     fetch(url)
         .then(response => {
             if (!response.ok) {
@@ -35,8 +35,17 @@ function updateSensorData(elementId, value) {
             applyColorBasedOnValue(elementId, value);
         } else {
             element.textContent = 'ERRO';
-            element.classList.add('error');
+            element.className = 'error';
+            hideAlertIcons(elementId);
         }
+    }
+}
+
+function hideAlertIcons(elementId) {
+    const alertIconId = elementId.includes('temp') ? 'temp' + elementId.substring(4) + 'alert' : 'alert' + elementId.substring(3);
+    const alertIcon = document.getElementById(alertIconId);
+    if (alertIcon) {
+        alertIcon.style.display = 'none';
     }
 }
 
@@ -76,6 +85,17 @@ function resetFontSize() {
 function applyColorBasedOnValue(elementId, value) {
     const element = document.getElementById(elementId);
     if (element) {
+        const alertIcons = document.querySelectorAll('.alert-icon');
+        alertIcons.forEach(icon => {
+            if (icon.id.startsWith('alert' + elementId.substring(3))) {
+                icon.style.display = 'none';
+            }
+        });
+
+        if (value === 'ERRO') {
+            return;
+        }
+
         const numberValue = parseFloat(value);
         element.className = '';
         let alertIconId;
@@ -122,19 +142,8 @@ function applyColorBasedOnValue(elementId, value) {
         if (alertIconId) {
             const alertIcon = document.getElementById(alertIconId);
             if (alertIcon) {
-                if (numberValue < 60 || numberValue > 70) {
-                    alertIcon.style.display = 'inline';
-                } else {
-                    alertIcon.style.display = 'none';
-                }
+                alertIcon.style.display = (numberValue < 60 || numberValue > 70) ? 'inline' : 'none';
             }
-        } else {
-            const alertIcons = document.querySelectorAll('.alert-icon');
-            alertIcons.forEach(icon => {
-                if (icon.id.startsWith('alert' + elementId.substring(3))) {
-                    icon.style.display = 'none';
-                }
-            });
         }
     }
 }
@@ -238,6 +247,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 }]
             },
             options: {
+                scales: {
+                    x: {
+                        reverse: true,
+                    },
+                },
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {

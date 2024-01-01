@@ -15,45 +15,32 @@ from selenium.common.exceptions import TimeoutException
 import time
 import pyperclip
 import subprocess
-import time
 import datetime
 
-api_url = 'http://SEU_IP/bridge.php' 
-phone_number = 'SEU_NUMERO_AQUI' # Ex: +5511999999999
-SENSOR_ID = 'media' # S1, S2, S3 ou media
+# Configurações do script, altere no arquivo config.json para alterar as configurações
+api_url = json.load(open('config.json'))['api_url']
+phone_number = json.load(open('config.json'))['phone_number']
+SENSOR_ID = json.load(open('config.json'))['sensor_id']
+PATH_CHROMEDRIVER = json.load(open('config.json'))['PATH_CHROMEDRIVER']
+PATH_CHROME_PORTABLE = json.load(open('config.json'))['PATH_CHROME_PORTABLE']
+PROFILE_PATH = json.load(open('config.json'))['PROFILE_PATH']
 
 # Habilite para ter mensagens de debug.
-DEBUG = False #True/False
+DEBUG = True #True/False
 DEBUG_FILE = True #True/False
 
 def debug_print(message):
     if DEBUG:
         print(message)
     if DEBUG_FILE:
-        with open('debug-notifica.txt', 'a') as file:
+        with open('debug-notifica.txt', 'a', encoding='utf-8') as file:
             current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             file.write(f"{current_time}: {message}\n")
 
-# Caminho Chrome Driver e Chrome Portátil
-PATH_CHROMEDRIVER = "chromedriver.exe"
-PATH_CHROME_PORTABLE = "GoogleChromePortable64/App/Chrome-bin/chrome.exe"
-
 def get_sensor_data_json(api_url):
     debug_print('Tentando conectar na API...')
-    i = 0
     while True:
-        if i == 5:
-            debug_print("Erro ao acessar a API: Tentativas esgotadas")
-            exit('Erro ao acessar a API: Tentativas esgotadas')
-        
-        try:
-            response = requests.get(api_url)
-        except requests.exceptions.ConnectionError:
-            debug_print("Erro de conexão com a API")
-            i += 1
-            time.sleep(0.01)
-            continue
-
+        response = requests.get(api_url)
         if response.status_code == 200:
             try:
                 data = response.json()
@@ -102,13 +89,13 @@ def check_conditions(data):
     # Substitui o identificador do sensor para a localização do sensor
     sensor_id = sensor_id.replace('S1', '25m').replace('S2', '50m').replace('S3', '75m')
 
-    if base_message == "🚨 Alerta - Aviário! %0D%0A\n":
+    if base_message == "🚨 Alertas: %0D%0A\n":
         return ''
 
     return base_message
 
 def send_whatsapp_message(phone_number, message):
-    profile_path = "GoogleChromePortable64/App/DefaultData/profile/Default"
+    profile_path = PROFILE_PATH
     options = Options()
     options.binary_location = PATH_CHROME_PORTABLE
     options.add_argument('--user-data-dir=' + profile_path)
