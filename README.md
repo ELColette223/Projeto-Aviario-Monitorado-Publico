@@ -78,6 +78,10 @@ O código do ESP32 pode ser utilizado em dispositivos semelhantes, como o ESP826
 
 ## Changelog
 
+### 1.6.1p - 03-Jan-2024
+Web Log:
+- Adição: Favicons para vários dispositivos. (Gerado por [https://realfavicongenerator.net](https://realfavicongenerator.net))
+
 ### 1.6.0p - 1-Jan-2024 🎉
 Web Log:
 - Estrutura dos arquivos atualizada e corrigida.
