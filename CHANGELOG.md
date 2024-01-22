@@ -1,6 +1,6 @@
 ## Changelog
 
-### 1.7.2p - 20-Jan-2024
+### 1.7.2p - 21-Jan-2024
 Web Log:
 - Correção: Notyf não definido no 'index.html'.
 - Correção: Botões colados no 'index.html'.
