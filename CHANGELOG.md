@@ -1,5 +1,10 @@
 ## Changelog
 
+### 1.7.2p - 20-Jan-2024
+Web Log:
+- Correção: Notyf não definido no 'index.html'.
+- Correção: Botões colados no 'index.html'.
+
 ### 1.7.1p - 21-Jan-2024
 Web Log:
 - Adição: Toast notifications com o [notyf](https://github.com/caroso1222/notyf).
