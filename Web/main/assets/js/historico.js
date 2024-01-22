@@ -1,15 +1,58 @@
-document.addEventListener('DOMContentLoaded', () => {
+// notyf function
+const notyf = new Notyf({
+    duration: 4500,
+    position: {
+        x: 'right',
+        y: 'bottom',
+    },
+    types: [
+        {
+          type: 'warning',
+          background: 'orange',
+          icon: {
+            className: 'material-icons',
+            tagName: 'i',
+            text: 'warning'
+          }
+        },
+    ]
+});
+
+document.addEventListener('DOMContentLoaded', async () => {
+    // Verifique se a tela é menor que 500px
+    var largura = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+    if (largura <= 500 && server_stauts === true) {
+        notyf.open({
+            type: 'warning',
+            message: 'Para melhor visualização, vire sua tela na horizontal.'
+        });
+    }
+
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(endDate.getDate() - 30);
 
     document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
     document.getElementById('endDate').value = endDate.toISOString().split('T')[0];
-
+    
+    await fetchAPIConfig();
     loadData();
-
+    
     document.getElementById('loadDataButton').addEventListener('click', loadData);
 });
+
+let apiURL = '';
+
+async function fetchAPIConfig() {
+    try {
+        const response = await fetch('js-config-end.php');
+        const config = await response.json();
+        apiURL = config.API_URL_RAW;
+    } catch (error) {
+        console.error('Error:', error);
+        notyf.error('Servidor Offline!'); // notyf
+    }
+}
 
 let rawDataForExport = [];
 
@@ -71,6 +114,8 @@ const processRawDataForExport = (apiData) => {
     return exportData;
 };
 
+server_stauts = false;
+
 const loadData = async () => {
     const startDate = document.getElementById('startDate').value;
     const endDate = document.getElementById('endDate').value;
@@ -81,7 +126,7 @@ const loadData = async () => {
     }
 
     try {
-        const response = await axios.get('https://SEU_IP/api.php?raw=full');
+        const response = await axios.get(apiURL);
         const rawData = processAPIData(response.data, startDate, endDate);
         const data = processDailyAverage(rawData);
         rawDataForExport = processRawDataForExport(response.data);
@@ -91,11 +136,14 @@ const loadData = async () => {
         const labels = data.map(d => d.date);
 
         updateChart(tempHumidityChart, labels, tempData, humidityData);
+        server_stauts = true;
     } catch (error) {
         console.error("Erro ao carregar dados da API:", error);
-        alert("Falha ao carregar dados.");
+        notyf.error('Servidor Offline!'); // notyf
+        server_stauts = false;
     }
 };
+
 
 const processAPIData = (apiData, startDate, endDate) => {
     const start = new Date(startDate);
@@ -156,7 +204,7 @@ const updateChart = (chart, labels, tempData, humidityData) => {
 const setDateFilter = (days) => {
     const endDate = new Date();
     const startDate = new Date();
-    startDate.setDate(endDate.getDate() - days + 1);
+    startDate.setDate(endDate.getDate() - days);
 
     document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
     document.getElementById('endDate').value = endDate.toISOString().split('T')[0];
@@ -181,53 +229,71 @@ window.onclick = function(event) {
 }
 
 window.exportData = function() {
-    const data = tempHumidityChart.toBase64Image();
-    const link = document.createElement('a');
-    link.href = data;
-    link.download = 'Dados_do_Sensor_Histórico-' + moment(new Date()).format("DD/MM/YYYY") + '.png';
-    link.click();
-};
+    if (server_stauts === true) {
+        if (window.confirm('Deseja exportar os dados: "Dados_do_Sensor_Histórico-' + moment(new Date()).format("DD/MM/YYYY") + ".png" + "?")) {                
+            const data = tempHumidityChart.toBase64Image();
 
-window.exportDataXlsx = async function() {
-    try {
-        const response = await axios.get('https://SEU_IP/api.php?raw=full');
-        const rawData = response.data;
-
-        let worksheet_data = [];
-        const header = ["Data", "Sensor ID", "Temperatura", "Umidade"];
-        worksheet_data.push(header);
-
-        for (const key in rawData) {
-            const entry = rawData[key];
-            const date = entry.time.data;
-
-            for (const sensorId in entry.sensors) {
-                const sensorData = entry.sensors[sensorId];
-                const row = [
-                    date,
-                    sensorId + ", " + (sensorPrefixes[sensorId] || ""),
-                    sensorData.temperatura || "N/A",
-                    sensorData.umidade || "N/A"
-                ];
-                worksheet_data.push(row);
-            }
-
-            worksheet_data.push([]);
+            const link = document.createElement('a');
+            link.href = data;
+            link.download = "Dados_do_Sensor_Histórico-" + moment(new Date()).format("DD/MM/YYYY") + ".png";
+            link.click();
+            notyf.success('Dados exportados com sucesso!'); // notyf
+        } else {
+            notyf.error('Operação cancelada!'); // notyf
         }
-
-        const worksheet = XLSX.utils.aoa_to_sheet(worksheet_data);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, "Dados do Sensor");
-        XLSX.writeFile(workbook, "Dados_do_Sensor_Histórico-" + moment(new Date()).format("DD-MM-YYYY") + ".xlsx");
-
-    } catch (error) {
-        console.error("Erro ao exportar dados da API:", error);
-        alert("Falha ao exportar dados.");
+    } else {
+        notyf.error('Erro ao exportar dados!'); // notyf
     }
 };
 
+window.exportDataXlsx = async function() {
+    if (server_stauts === true) {
+        try {
+            if (window.confirm('Deseja exportar os dados: "Dados_do_Sensor_Histórico-' + moment(new Date()).format("DD-MM-YYYY") + ".xlsx" + "?")) {   
+                const response = await axios.get(apiURL);
+                const rawData = response.data;
 
+                let worksheet_data = [];
+                const header = ["Data", "Sensor ID", "Temperatura", "Umidade"];
+                worksheet_data.push(header);
 
+                for (const key in rawData) {
+                    const entry = rawData[key];
+                    const date = entry.time.data;
+
+                    for (const sensorId in entry.sensors) {
+                        const sensorData = entry.sensors[sensorId];
+                        const row = [
+                            date,
+                            sensorId + ", " + (sensorPrefixes[sensorId] || ""),
+                            sensorData.temperatura || "N/A",
+                            sensorData.umidade || "N/A"
+                        ];
+                        worksheet_data.push(row);
+                    }
+
+                    worksheet_data.push([]);
+                }
+
+                const worksheet = XLSX.utils.aoa_to_sheet(worksheet_data);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Dados do Sensor");
+                XLSX.writeFile(workbook, "Dados_do_Sensor_Histórico-" + moment(new Date()).format("DD-MM-YYYY") + ".xlsx");
+                notyf.success('Dados exportados com sucesso!'); // notyf
+            } else {
+                notyf.error('Operação cancelada!'); // notyf
+            }
+        } catch (error) {
+            notyf.error('Erro ao exportar dados!'); // notyf
+        }
+    } else {
+        notyf.error('Erro ao exportar dados!'); // notyf
+    }
+};
+
+Chart.defaults.font.family = 'Montserrat, sans-serif';
+Chart.defaults.font.style = 'normal';
+Chart.defaults.font.weight = '500';
 
 const ctx = document.getElementById('tempHumidityChart').getContext('2d');
 const tempHumidityChart = new Chart(ctx, {
@@ -238,65 +304,78 @@ const tempHumidityChart = new Chart(ctx, {
             label: 'Temperatura (°C)',
             backgroundColor: 'rgba(255, 99, 132, 0.2)',
             borderColor: 'rgba(255, 99, 132, 1)',
-            pointRadius: 4,
+            pointBackgroundColor: 'rgba(255, 99, 132, 0.8)',
+            pointBorderColor: 'rgba(255, 99, 132, 0.8)',
+            pointRadius: 0,
+            pointHoverRadius: 5,
             yAxisID: 'y',
             data: []
         }, {
             label: 'Umidade (%)',
             backgroundColor: 'rgba(54, 162, 235, 0.2)',
             borderColor: 'rgba(54, 162, 235, 1)',
-            pointRadius: 4,
+            pointBackgroundColor: 'rgba(54, 162, 235, 0.8)',
+            pointBorderColor: 'rgba(54, 162, 235, 0.8)',
+            pointRadius: 0,
+            pointHoverRadius: 5,
             yAxisID: 'y1',
             data: []
         }]
     },
-        options: {
-            plugins: {
-                legend: {
-                    labels: {
-                        font: {
-                            size: 12
-                        }
-                    }
-                },
-                title: {
+    options: {
+        plugins: {
+            legend: {
+                labels: {
                     font: {
-                        size: 10,
+                        size: 12
                     }
                 }
             },
-            hover: {
-                mode: 'nearest',
-                intersect: false,
-                axis: 'x'
+            title: {
+                font: {
+                    size: 10,
+                }
             },
-            responsive: true,
-            maintainAspectRatio: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    type: 'linear',
-                    display: true,
-                    position: 'left',
-                    ticks: {
-                        font: {
-                            size: 11
-                        }
+            tooltip: {
+                mode: 'index',
+                intersect: false
+            }
+        },
+        interaction: {
+            mode: 'index',
+            intersect: false
+        },
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: {
+            y: {
+                beginAtZero: true,
+                type: 'linear',
+                display: true,
+                position: 'left',
+                ticks: {
+                    color: '#FF6384',
+                    font: {
+                        size: 12,
+                        weight: 'bold'
                     }
+                }
+            },
+            y1: {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                grid: {
+                    drawOnChartArea: false,
                 },
-                y1: {
-                    type: 'linear',
-                    display: true,
-                    position: 'right',
-                    grid: {
-                        drawOnChartArea: false,
-                    },
-                    ticks: {
-                        font: {
-                            size: 11
-                        }
+                ticks: {
+                    color: '#36A2EB',
+                    font: {
+                        size: 12,
+                        weight: 'bold'
                     }
                 }
             }
         }
-    });
+    }
+});

@@ -1,10 +1,24 @@
-window.addEventListener('load', function() {
+let bridgeURL = '';
+
+async function fetchAPIBridgeConfig() {
+    try {
+        const response = await fetch('js-config-end.php');
+        const config = await response.json();
+        bridgeURL = config.API_URL_BRIDGE;
+        //console.log("API URL:", bridgeURL);
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+window.addEventListener('load', async () => {
+    await fetchAPIBridgeConfig();
     fetchSensorData();
     setInterval(fetchSensorData, 10000);
 });
 
 function fetchSensorData() {
-    const url = 'https://SEU_IP/bridge.php';
+    const url = bridgeURL;
     fetch(url)
         .then(response => {
             if (!response.ok) {
@@ -72,6 +86,22 @@ function changeFontSize(change) {
     elements.forEach(element => {
         const currentSize = parseFloat(window.getComputedStyle(element, null).getPropertyValue('font-size'));
         element.style.fontSize = `${currentSize + change}px`;
+    });
+}
+
+function increaseFontSize() {
+    const elements = document.querySelectorAll('span');
+    elements.forEach(element => {
+        const currentSize = parseFloat(window.getComputedStyle(element, null).getPropertyValue('font-size'));
+        element.style.fontSize = (currentSize + 1) + 'px';
+    });
+}
+
+function decreaseFontSize() {
+    const elements = document.querySelectorAll('span');
+    elements.forEach(element => {
+        const currentSize = parseFloat(window.getComputedStyle(element, null).getPropertyValue('font-size'));
+        element.style.fontSize = (currentSize - 1) + 'px';
     });
 }
 
@@ -158,7 +188,7 @@ function hideLoader() {
 }
 
 function handleError(error) {
-    console.error('Erro ao buscar dados:', error);
+    console.error('Erro ao buscar dados:', error, bridgeURL);
     displayError();
     hideLoader();
 }
@@ -172,13 +202,11 @@ function toggleHistorico() {
     const historicoDiv = document.querySelector('.historico');
     const h2Element = document.querySelector('.historico h2');
     const btn = document.querySelector('.button');
-    const btnHistoricoDetalhado = document.querySelector('.btn-historico-detalhado');
 
     if (historicoDiv && h2Element && btn) {
         historicoDiv.classList.toggle('show-content');
         h2Element.innerHTML = historicoDiv.classList.contains('show-content') ? 'Fechar Histórico' : 'Ver Histórico';
         btn.classList.toggle('show-content');
-        btnHistoricoDetalhado.style.display = historicoDiv.classList.contains('show-content') ? 'flex' : 'none';
     }
 }
 
@@ -204,6 +232,22 @@ function togglePopup() {
     popup.classList.toggle("show");
 }
 
+function increaseFontSize() {
+    const elements = document.querySelectorAll('span');
+    elements.forEach(element => {
+        const currentSize = parseFloat(window.getComputedStyle(element, null).getPropertyValue('font-size'));
+        element.style.fontSize = (currentSize + 1) + 'px';
+    });
+}
+
+function decreaseFontSize() {
+    const elements = document.querySelectorAll('span');
+    elements.forEach(element => {
+        const currentSize = parseFloat(window.getComputedStyle(element, null).getPropertyValue('font-size'));
+        element.style.fontSize = (currentSize - 1) + 'px';
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const increaseFontButton = document.getElementById('increaseFont');
     const decreaseFontButton = document.getElementById('decreaseFont');
@@ -225,10 +269,37 @@ document.addEventListener('DOMContentLoaded', function() {
 
 let sensorChart;
 
+Chart.defaults.font.family = 'Montserrat, sans-serif';
+Chart.defaults.font.style = 'normal';
+Chart.defaults.font.weight = 'bold';
+
+server_stauts = false;
+
 document.addEventListener('DOMContentLoaded', function() {
+    // notyf function
+    const notyf = new Notyf({
+        duration: 4000,
+        position: {
+            x: 'right',
+            y: 'bottom',
+        },
+        types: [
+            {
+              type: 'warning',
+              background: 'orange',
+              icon: {
+                className: 'material-icons',
+                tagName: 'i',
+                text: 'warning'
+              }
+            },
+        ]
+    });
+        
     const sensorChartElement = document.getElementById('sensorChart');
     if (sensorChartElement) {
         window.resetZoom = resetZoom;
+        
         const ctx = sensorChartElement.getContext('2d');
         const sensorChart = new Chart(ctx, {
             type: 'line',
@@ -247,9 +318,45 @@ document.addEventListener('DOMContentLoaded', function() {
                 }]
             },
             options: {
+                layout: {
+                    padding: {
+                        left: 25, // Para evitar bug da data desaparecendo
+                        right: 25
+                    }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    intersect: false,
+                    axis: 'x'
+                },
                 scales: {
                     x: {
                         reverse: true,
+                    },
+                    y: {
+                        ticks:{
+                           color: '#FF6384'
+                        },
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        id: 'y-temperatura',
+                        min: 10, // Valor mínimo
+                        max: 100, // Valor máximo
+                    },
+                    y1: {
+                        ticks:{
+                           color: '#36A2EB'
+                        },
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        id: 'y-umidade',
+                        min: 10, // Valor mínimo
+                        max: 100, // Valor máximo
+                        grid: {
+                            drawOnChartArea: false,
+                        },
                     },
                 },
                 responsive: true,
@@ -257,20 +364,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 plugins: {
                     zoom: {
                         pan: {
-                            enabled: true,
+                            enabled: false,
                             mode: 'x',
                         },
                         zoom: {
                             pinch: {
-                                enabled: true,
+                                enabled: false,
                             },
                             drag: {
-                                enabled: true,
+                                enabled: false,
                             },
                             wheel: {
-                                enabled: true,
+                                enabled: false,
                             },
-                            enabled: true,
+                            enabled: false,
                             mode: 'xy',
                             sensitivity: 2,
                             speed: 5
@@ -294,32 +401,70 @@ document.addEventListener('DOMContentLoaded', function() {
             sensorChart.options.scales.x.zoom = currentZoom;
             sensorChart.update();
         }
+        
+        function fetchData() {
+            const url = `api.php`;
+            fetch(url, {
+                    Headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    updateChart(data);
+                    server_stauts = true;
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        }
+        fetchData();
 
         window.exportData = function() {
-            const data = sensorChart.toBase64Image();
-            const link = document.createElement('a');
-            link.href = data;
-            link.download = 'Dados_do_Sensor-' + moment(new Date()).format("DD/MM/YYYY") + '.png';
-            link.click();
+            if (server_stauts === true) {
+                if (window.confirm('Deseja exportar os dados: "Dados_do_Sensor-' + moment(new Date()).format("DD/MM/YYYY") + ".png" + "?")) {     
+                    const data = sensorChart.toBase64Image();
+                    const link = document.createElement('a');
+                    link.href = data;
+                    link.download = 'Dados_do_Sensor-' + moment(new Date()).format("DD/MM/YYYY") + '.png';
+                    link.click();
+                    notyf.success('Dados exportados com sucesso!'); // notyf
+                } else {
+                    notyf.error('Operação cancelada!'); // notyf
+                }
+            } else {
+                notyf.error('Erro ao exportar dados!'); // notyf
+            }
         };
 
         window.exportDataXlsx = function() {
-            const datasets = sensorChart.data.datasets;
-            let worksheet_data = [];
-            const labels = sensorChart.data.labels;
-            const header = ["Data", ...datasets.map(dataset => dataset.label)];
-            worksheet_data.push(header);
-
-            labels.forEach((label, index) => {
-                const row = [label, ...datasets.map(dataset => dataset.data[index] || '')];
-                worksheet_data.push(row);
-            });
-
-            const worksheet = XLSX.utils.aoa_to_sheet(worksheet_data);
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "Dados do Sensor");
-
-            XLSX.writeFile(workbook, "Dados_do_Sensor-" + moment(new Date()).format("DD-MM-YYYY") + ".xlsx");
+            if (server_stauts === true) {
+                try {
+                    if (window.confirm('Deseja exportar os dados: "Dados_do_Sensor-' + moment(new Date()).format("DD-MM-YYYY") + ".xlsx" + "?")) {   
+                        const datasets = sensorChart.data.datasets;
+                        let worksheet_data = [];
+                        const labels = sensorChart.data.labels;
+                        const header = ["Data", ...datasets.map(dataset => dataset.label)];
+                        worksheet_data.push(header);
+            
+                        labels.forEach((label, index) => {
+                            const row = [label, ...datasets.map(dataset => dataset.data[index] || '')];
+                            worksheet_data.push(row);
+                        });
+            
+                        const worksheet = XLSX.utils.aoa_to_sheet(worksheet_data);
+                        const workbook = XLSX.utils.book_new();
+                        XLSX.utils.book_append_sheet(workbook, worksheet, "Dados do Sensor");
+            
+                        XLSX.writeFile(workbook, "Dados_do_Sensor-" + moment(new Date()).format("DD-MM-YYYY") + ".xlsx");
+                        notyf.success('Dados exportados com sucesso!'); // notyf
+                    } else {
+                        notyf.error('Operação cancelada!'); // notyf
+                    }
+                } catch (error) {
+                    notyf.error('Erro ao exportar dados!'); // notyf
+                }
+            } else {
+                notyf.error('Erro ao exportar dados!'); // notyf
+            }
         };
 
         function calculateAspectRatioHeight() {
@@ -346,21 +491,5 @@ document.addEventListener('DOMContentLoaded', function() {
 
             sensorChart.update();
         }
-
-        function fetchData() {
-            const url = `api.php`;
-            fetch(url, {
-                    Headers: {
-                        'Cache-Control': 'no-cache, no-store, must-revalidate',
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    updateChart(data);
-                })
-                .catch(error => console.error('Error fetching data:', error));
-        }
-
-        fetchData();
     }
 });

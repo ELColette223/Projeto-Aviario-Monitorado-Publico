@@ -2,7 +2,7 @@
 
 /*
  *  API para obter os dados em tempo real
- *  Versão: 1.2.0
+ *  Versão: 1.2.1
  */
 
 header("Content-Type: application/json");
@@ -74,6 +74,7 @@ function checkSensorOnline($espURL, $httpcode) {
 
 // ENDPOINT: /bridge.php?status PARA VERIFICAR SE O SENSOR ESTÁ ONLINE
 if (isset($_GET["status"])) {
+    $httpcode = 0;
 
     // Verifica a resposta de checkSensorOnline() com retorno
     if (checkSensorOnline($espURL, $httpcode)) {
@@ -156,23 +157,54 @@ function validateSensorData($data) {
     return $data;
 }
 
-// FUNÇÃO PARA OBTER OS DADOS DO SENSOR EM TEMPO REAL
-function fetchSensorData($espURL) {
-    $ch = curl_init($espURL);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+// FUNÇÃO PARA OBTER OS DADOS DO SENSOR EM TEMPO REAL COM RETRY EM CASO DE VALORES VAZIOS
+function fetchSensorData($espURL, $maxRetries = MAX_RETRIES) {
+    $retryCount = 0;
 
-    $response = curl_exec($ch);
-    $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    do {
+        $ch = curl_init($espURL);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
 
-    curl_close($ch);
+        $response = curl_exec($ch);
+        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        curl_close($ch);
+
+        if ($httpcode == 200) {
+            $sensorData = json_decode($response, true);
+            $validatedData = validateSensorData($sensorData);
+
+            // Verifica se há valores vazios
+            $isEmpty = checkForEmptyValues($validatedData);
+            if (!$isEmpty) {
+                return $validatedData;
+            }
+        }
+
+        $retryCount++;
+    } while ($retryCount < $maxRetries && ($httpcode != 200 || $isEmpty));
 
     if ($httpcode == 200) {
         $sensorData = json_decode($response, true);
         return validateSensorData($sensorData);
-    } else {
-        return null;
     }
+
+    return null;
+}
+
+// FUNÇÃO PARA VERIFICAR SE HÁ VALORES VAZIOS
+function checkForEmptyValues($data) {
+    foreach ($data as $key => $sensor) {
+        if (isset($sensor["temperatura"]) && $sensor["temperatura"] === "") {
+            return true;
+        }
+
+        if (isset($sensor["umidade"]) && $sensor["umidade"] === "") {
+            return true;
+        }
+    }
+    return false;
 }
 
 // ENTREGA OS DADOS DO SENSOR EM TEMPO REAL
