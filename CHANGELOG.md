@@ -1,6 +1,6 @@
 ## Changelog
 
-### 1.7.1p - 20-Jan-2024
+### 1.7.1p - 21-Jan-2024
 Web Log:
 - Adição: Toast notifications com o [notyf](https://github.com/caroso1222/notyf).
 - Mudança: 'index.html' Botões de acessibilidade alterados.
