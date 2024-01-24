@@ -67,7 +67,7 @@ O código do ESP32 pode ser utilizado em dispositivos semelhantes, como o ESP826
 ## Tabela utilizada como base
 <details>
   <summary>Clique para ver a representação em imagem</summary>
-  <img src="https://www.btaaditivos.com.br/images/tabela-temperatura-ambiente-umidade-ar.jpg" alt="tabela" width="65%"><br>
+  <img src="https://i.ibb.co/WcZ1TW2/tabela-temperatura-ambiente-umidade-ar.jpg" alt="tabela" width="65%"><br>
 </details>
 
 ## Manual de Erros ESP32
