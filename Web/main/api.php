@@ -2,7 +2,7 @@
 
 /*
  *  REST API para obter os dados do banco de dados
- *  Versão: 1.4.1
+ *  Versão: 1.5.2
  */
 
 header("Content-Type: application/json");
@@ -21,142 +21,35 @@ if (LIMIT_ACCESS) {
     }
 }
 
-// Arquivo de cache para status
-$cacheFile = "./cache/sensor_data_cache.json";
-$cacheTime = 3600; // 1 hora
-
-// Verfica o status do servidor com endpoint "api.php?status"
-if (isset($_GET["status"])) {
-    echo getServerStatus();
-    exit();
-}
+// Arquivo de cache para dados filtrados
+$cacheFilter = "./cache/sensor_data_cache.json";
+$cacheTimeFilter = 3600; // 1 hora
 
 // Arquivo de cache para dados crus
 $cacheRaw = "./cache/raw_data_cache.json";
 $cacheTimeRaw = 3600; // 1 hora
 
-// Retorna os dados crus através do endpoint "api.php?raw"
+// Define o Header para permitir o acesso de qualquer origem
+header('Access-Control-Allow-Origin: *');
+
+// Se for solicitado dados crus, retorna pelo endpoint /api.php?raw
 if (isset($_GET["raw"])) {
-    header('Access-Control-Allow-Origin: *');
     echo getRawData();
-    exit();
+
+// Por padrão retorna dados filtrados até 55 dias atrás por meio do endpoint /api.php   
+} else {
+    echo getSensorData();
 }
 
-// Retorna os dados dos sensores
-echo getSensorData();
+// Encerra o script
 exit();
 
-function getServerStatus() {
-    // URL do servidor
-    $serverURL = ESP_URL;
-
-    // Verifica se o servidor está online
-    $ch = curl_init($serverURL);
-
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_NOBODY, true);
-    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
-    curl_exec($ch);
-
-    // Verifica o status retornado como online ou offline
-    if (curl_getinfo($ch, CURLINFO_HTTP_CODE) == 200) {
-        $response = [
-            "server_status" => "online",
-            "server_ip" => ESP_URL,
-        ];
-    } else {
-        $response = [
-            "server_status" => "offline",
-            "server_ip" => ESP_URL
-        ];
-    }
-
-    // Fecha a conecxão cURL
-    curl_close($ch);
-
-    return json_encode($response);
-}
-
-function getRawData() {
-    global $cacheRaw, $cacheTimeRaw, $dbHost, $dbName, $dbUsername, $dbPassword;
-
-    // Verifica se o usuário solicitou todos os dados sem filtrar os vazios
-    $includeEmpty = isset($_GET["raw"]) && $_GET["raw"] === "full";
-
-    if (CACHE_STATUS && file_exists($cacheRaw) && filemtime($cacheRaw) > time() - $cacheTimeRaw) {
-        return file_get_contents($cacheRaw);
-    } else {
-        try {
-            $conn = new PDO(
-                "mysql:host=$dbHost;dbname=$dbName",
-                $dbUsername,
-                $dbPassword
-            );
-            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-            // Consulta para selecionar todos os dados
-            $sql = "SELECT sensors_json, timestamp FROM sensor_data ORDER BY timestamp DESC";
-
-            // Prepara e executa a consulta SQL
-            $stmt = $conn->prepare($sql);
-            $stmt->execute();
-
-            // Define o array que irá armazenar os dados
-            $data = [];
-
-            // Itera sobre os resultados e adiciona ao array
-            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                $sensors = json_decode($row["sensors_json"], true);
-
-                // Se não estiver incluindo vazios, verifica se algum sensor está completamente vazio
-                if (!$includeEmpty) {
-                    $anySensorEmpty = false;
-                    foreach ($sensors as $sensorValues) {
-                        if (empty($sensorValues["umidade"]) && empty($sensorValues["temperatura"])) {
-                            $anySensorEmpty = true;
-                            break;
-                        }
-                    }
-
-                    // Se algum sensor estiver completamente vazio, pula este registro
-                    if ($anySensorEmpty) {
-                        continue;
-                    }
-                }
-
-                $time = date("d-m-Y H:i", strtotime($row["timestamp"]));
-
-                // Adiciona os dados ao array mantendo a estrutura original
-                $data[] = [
-                    "sensors" => $sensors,
-                    "time" => ["data" => $time]
-                ];
-            }
-
-            $jsonData = json_encode($data, JSON_FORCE_OBJECT);
-
-            // Salva os dados no cache
-            if (!file_exists(dirname($cacheRaw))) {
-                mkdir(dirname($cacheRaw), 0777, true);
-            }
-            file_put_contents($cacheRaw, $jsonData);
-
-            return $jsonData;
-        } catch (PDOException $e) {
-            return json_encode([
-                "success" => false,
-                "message" => "Erro ao conectar com o banco de dados: " . $e->getMessage()
-            ]);
-        }
-    }
-}
-
-
+// FUNÇÃO PARA CAPTURAR OS DADOS FILTRADOS DO BANCO DE DADOS ATÉ 55 DIAS ATRÁS
 function getSensorData() {
-    global $cacheFile, $cacheTime, $dbHost, $dbName, $dbUsername, $dbPassword;
+    global $cacheFilter, $cacheTimeFilter, $dbHost, $dbName, $dbUsername, $dbPassword;
 
-    if (CACHE_STATUS && file_exists($cacheFile) && filemtime($cacheFile) > time() - $cacheTime) {
-        return file_get_contents($cacheFile);
+    if (CACHE_STATUS && file_exists($cacheFilter) && filemtime($cacheFilter) > time() - $cacheTimeFilter) {
+        return file_get_contents($cacheFilter);
     } else {
         try {
             $conn = new PDO(
@@ -275,10 +168,10 @@ function getSensorData() {
             $jsonData = json_encode($data);
 
             // Salva os dados no cache
-            if (!file_exists(dirname($cacheFile))) {
-                mkdir(dirname($cacheFile), 0777, true);
+            if (!file_exists(dirname($cacheFilter))) {
+                mkdir(dirname($cacheFilter), 0777, true);
             }
-            file_put_contents($cacheFile, $jsonData);
+            file_put_contents($cacheFilter, $jsonData);
 
             // Retorna os dados
             return $jsonData;
@@ -290,4 +183,80 @@ function getSensorData() {
         }
     }
 }
+
+// FUNÇÃO PARA CAPTURAR TODOS OS DADOS CRUS DO BANCO DE DADOS
+function getRawData() {
+    global $cacheRaw, $cacheTimeRaw, $dbHost, $dbName, $dbUsername, $dbPassword;
+
+    // Verifica se o usuário solicitou todos os dados sem filtrar os vazios
+    $includeEmpty = isset($_GET["raw"]) && $_GET["raw"] === "full";
+
+    if (CACHE_STATUS && file_exists($cacheRaw) && filemtime($cacheRaw) > time() - $cacheTimeRaw) {
+        return file_get_contents($cacheRaw);
+    } else {
+        try {
+            $conn = new PDO(
+                "mysql:host=$dbHost;dbname=$dbName",
+                $dbUsername,
+                $dbPassword
+            );
+            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+            // Consulta para selecionar todos os dados
+            $sql = "SELECT sensors_json, timestamp FROM sensor_data ORDER BY timestamp DESC";
+
+            // Prepara e executa a consulta SQL
+            $stmt = $conn->prepare($sql);
+            $stmt->execute();
+
+            // Define o array que irá armazenar os dados
+            $data = [];
+
+            // Itera sobre os resultados e adiciona ao array
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $sensors = json_decode($row["sensors_json"], true);
+
+                // Se não estiver incluindo vazios, verifica se algum sensor está completamente vazio
+                if (!$includeEmpty) {
+                    $anySensorEmpty = false;
+                    foreach ($sensors as $sensorValues) {
+                        if (empty($sensorValues["umidade"]) && empty($sensorValues["temperatura"])) {
+                            $anySensorEmpty = true;
+                            break;
+                        }
+                    }
+
+                    // Se algum sensor estiver completamente vazio, pula este registro
+                    if ($anySensorEmpty) {
+                        continue;
+                    }
+                }
+
+                $time = date("d-m-Y H:i", strtotime($row["timestamp"]));
+
+                // Adiciona os dados ao array mantendo a estrutura original
+                $data[] = [
+                    "sensors" => $sensors,
+                    "time" => ["data" => $time]
+                ];
+            }
+
+            $jsonData = json_encode($data, JSON_FORCE_OBJECT);
+
+            // Salva os dados no cache
+            if (!file_exists(dirname($cacheRaw))) {
+                mkdir(dirname($cacheRaw), 0777, true);
+            }
+            file_put_contents($cacheRaw, $jsonData);
+
+            return $jsonData;
+        } catch (PDOException $e) {
+            return json_encode([
+                "success" => false,
+                "message" => "Erro ao conectar com o banco de dados: " . $e->getMessage()
+            ]);
+        }
+    }
+}
+
 ?>

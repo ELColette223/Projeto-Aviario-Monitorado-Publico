@@ -32,6 +32,9 @@ O código do ESP32 pode ser utilizado em dispositivos semelhantes, como o ESP826
 - [ ] Sistema aprimorado para envio de mensagem.
 - [ ] Suporte a Linux Server.
 - [ ] Sistema de detecção de anormalidade.
+- [ ] Melhoria na coleta de dados Cron.
+- [ ] Painel Admin de Gerenciamento.
+- [ ] Suporte MQTT Full.
 
 ## Manual de Instalação
 
@@ -43,7 +46,7 @@ O código do ESP32 pode ser utilizado em dispositivos semelhantes, como o ESP826
 4. Envie os arquivos da pasta `Web/main` para o seu servidor, local ou web.
 5. No SQL, crie uma tabela chamada `sensor_data` com os campos `id` (primary Auto Increment), `sensors_json` (JSON utf8mb4_bin) e `timestamp` (datetime). Alternativamente, importe o arquivo `dump.sql`.
 6. Atualize e confira os dados de `config.php`.
-7. Instale a tarefa cron em seu servidor com o comando `0 * * * * /usr/bin/php /data/collect_data.php` para coleta automática de dados do ESP para o banco de dados.
+7. Instale a tarefa cron em seu servidor com o comando `0 * * * * /usr/bin/php /data/collect_data.php?key=SEU_TOKEN` para coleta automática de dados do ESP para o banco de dados.
 8. Instale o [Python](https://www.python.org/downloads/) em seu PC (Instalação completa).
 9. Baixe o [GoogleChromePortable64bits](https://drive.google.com/drive/folders/1tqb3kwqh1bLzXfG6TEc1eh6VbYTOq1zP?usp=sharing) ou [GoogleChromePortable32bits](https://drive.google.com/drive/folders/1XnBIfTEyFtG0BScimzkZAEFDWuZ0OWgt?usp=sharing) e coloque na pasta `python`.
 10. Na pasta `python`, altere o arquivo `config.json` conforme necessário. Não esqueça de alterar **PATH_CHROMEDRIVER** e **PATH_CHROME_PORTABLE**, escolha entre 32 ou 64 bits para **PATH_CHROME_PORTABLE**
@@ -53,7 +56,6 @@ O código do ESP32 pode ser utilizado em dispositivos semelhantes, como o ESP826
 14. Execute o arquivo `PAM-Auto-WhatsApp.bat` para rodar continuamente o script de envio. (Apenas Windows).
 15. Para manter a continuidade, crie um atalho de `PAM-Auto-WhatsApp.bat` e coloque em `C:\Users\SEU-USER\AppData\Roaming\Microsoft\Windows\Start Menu\Programs`.
 16. Após esses passos, o sistema estará configurado!
-
 ## Esquema de Hardware
 
 <details>

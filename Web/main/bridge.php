@@ -2,7 +2,7 @@
 
 /*
  *  API para obter os dados em tempo real
- *  Versão: 1.2.1
+ *  Versão: 1.2.3
  */
 
 header("Content-Type: application/json");
@@ -16,8 +16,18 @@ checkLimitAccess();
 $espURL = ESP_URL;
 
 // Conectar ao Redis
-$redis = new Redis();
-$redis->connect(REDIS_HOST, REDIS_PORT);
+try {
+    $redis = new Redis();
+    $redis->connect(REDIS_HOST, REDIS_PORT);
+} catch (Exception $e) {
+    logDebug("Falha ao conectar ao Redis: {$e->getMessage()}");
+    header("HTTP/1.1 500 Internal Server Error");
+    echo json_encode([
+        "success" => false,
+        "message" => "Falha ao conectar ao Redis.",
+    ]);
+    exit();
+}
 
 // Define a chave do cache
 $cacheKey = ESP_CACHE_KEY;
@@ -40,36 +50,6 @@ function saveCacheData($redis, $cacheKey, $data, $cacheTime) {
     $redis->set($cacheKey, json_encode($data));
     $redis->set($cacheKey . '_time', time());
     $redis->expire($cacheKey, $cacheTime); // Define o tempo de expiração do cache
-}
-
-// FUNÇÃO PARA VERIFICAR SE O SENSOR ESTÁ ONLINE
-function checkSensorOnline($espURL, $httpcode) {
-    $httpcode = 0;
-    for ($i = 0; $i < 2; $i++) {
-        $ch = curl_init($espURL);
-
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_NOBODY, true);
-        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
-        curl_exec($ch);
-
-        // Verifica o status retornado como online ou offline
-        $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        if ($httpcode == 200) {
-            curl_close($ch);
-            return true;
-        }
-
-        // Fecha a conexão cURL
-        curl_close($ch);
-
-        // Espera um pouco antes de tentar novamente
-        if ($i < 1) {
-            sleep(1);
-        }
-    }
-
-    return false;
 }
 
 // ENDPOINT: /bridge.php?status PARA VERIFICAR SE O SENSOR ESTÁ ONLINE

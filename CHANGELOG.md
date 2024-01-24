@@ -1,5 +1,24 @@
 ## Changelog
 
+### 1.7.3p - 24-Jan-2024
+Web Log:
+- Adição: Timezone na 'config.php'.
+- Mudança: Função 'checkSensorOnline()' para status online do sensor movida para 'controller/functions.php'.
+- Correção: Token do 'collect_data.php' definido agora em 'config.php'.
+- Correção: Timezone correto em 'collect_data.php'.
+
+- Atualização da API Bridge para v1.2.3:
+    - Correção: Erro ao conectar no Redis retornando 200, agora retorna 500.
+
+- Atualização API para v1.5.2:
+    - Remoção: Teste de status do ESP (já é feita pela bridge).
+    - Correção: Armazenagem de cache.
+    - Refatoração de código e adição de comentários.
+
+Arquivo 'config.php':
+- Adição: Definição de timezone.
+- Adição: Definição de status e token de segurança da coleta de dados 'collect_data.php'
+
 ### 1.7.2p - 21-Jan-2024
 Web Log:
 - Correção: Notyf não definido no 'index.html'.

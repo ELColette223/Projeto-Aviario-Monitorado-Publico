@@ -10,6 +10,9 @@ try {
     die("Erro de conexão");
 }
 
+// Define o timezone. https://www.php.net/manual/en/timezones.php
+date_default_timezone_set('America/Sao_Paulo');
+
 // Define o IP do servidor
 define("ESP_URL", "http://192.168.0.219/");
 
@@ -22,15 +25,15 @@ define("API_URL_BRIDGE", "https://SEU_IP/bridge.php");
 // Define o limite de tentativas de conexão com o ESP
 define("MAX_RETRIES", 3);
 
-// Define o status de cache da API 'api.php'
-define("CACHE_STATUS", true);
-
 // Define o arquivo e tempo de cache da API 'bridge.php' com Redis
 define("CACHE_BRIDGE_STATUS", true);
 define("REDIS_HOST", "127.0.0.1"); // IP do servidor Redis
 define("REDIS_PORT", 6379); // Porta do servidor Redis
 define("ESP_CACHE_KEY", "esp32_sensor_data"); // Chave do cache, não precisa alterar
 define("CACHE_TIME", 8); // Tempo de cache em segundos
+
+// Define o status de cache da API 'api.php'
+define("CACHE_STATUS", true);
 
 // Define o limite de acesso
 define("LIMIT_ACCESS", false);
@@ -39,7 +42,11 @@ define("ALLOWED_IPS", "https://SEU_IP_AQUI");
 // Define status de debug
 define("DEBUG_STATUS", false);
 
-// Define Token de segurança
+// Define Token de segurança para a API
 define("TOKEN_API_STATUS", false);
 define("TOKEN_API", "SEU_TOKEN_AQUI");
+
+// Define o status de segurança da coleta de dados 'collect_data.php'
+define("SECURITY_COLLECT_DATA", true);
+define("TOKEN_SECURITY_COLLECT_DATA", "SEU_TOKEN_AQUI");
 ?>

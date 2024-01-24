@@ -16,24 +16,29 @@ if ($_SERVER["REQUEST_METHOD"] !== "GET") {
     die("405 Method Not Allowed");
 }
 
-// Verifica se a chave 'key' foi enviada na requisição GET
-if (!isset($_GET['key']) || $_GET['key'] !== 'TOKENSUPERSEGURO') {
-    header('HTTP/1.0 403 Forbidden');
-    die('403 Forbidden');
+// Define o token de segurança para a coleta de dados
+if (SECURITY_COLLECT_DATA) {
+    if (!isset($_GET["key"]) || $_GET["key"] !== TOKEN_SECURITY_COLLECT_DATA) {
+        header("HTTP/1.0 403 Forbidden");
+        die("403 Forbidden");
+    }
 }
 
+// Define as credenciais do banco de dados
 $conn = new mysqli($dbHost, $dbUsername, $dbPassword, $dbName);
 
-$errorLog = "log.txt";
+// Configurações de Log
+$log_file = "log.txt";
 
-function logError($message)
-{
-    global $errorLog;
-    error_log(date("[Y-m-d H:i:s] ") . $message . PHP_EOL, 3, $errorLog);
+function logError($message) {
+    global $log_file;
+    error_log(date("[Y-m-d H:i:s] ") . $message . PHP_EOL, 3, $log_file);
 }
 
+// Define o tipo de resposta como JSON
 header("Content-Type: application/json");
 
+// Tentar conectar ao banco de dados
 try {
     $conn = new PDO(
         "mysql:host=$dbHost;dbname=$dbName",
@@ -46,8 +51,10 @@ try {
     die();
 }
 
+// Define a URL do ESP
 $url = ESP_URL;
 
+// Verifica se o ESP está online
 $ch = curl_init($url);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
@@ -55,6 +62,7 @@ $response = curl_exec($ch);
 $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 curl_close($ch);
 
+// Se o ESP estiver online, tenta obter os dados
 if ($httpcode == 200) {
     $data = json_decode($response, true);
 
@@ -72,6 +80,7 @@ if ($httpcode == 200) {
             echo json_encode([
                 "success" => true,
                 "message" => "Dados inseridos.",
+                "datatime" => date("d-m-Y H:i:s"),
                 "data" => json_decode($response),
             ]);
             logError("SUCESSO: Dados inseridos. $response");
