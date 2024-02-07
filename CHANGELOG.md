@@ -1,5 +1,11 @@
 ## Changelog
 
+### 1.8.1p - 07-Fev-2024
+
+Web Log:
+- Correção: Bugs
+- Refatoração: Arquivo 'assets/js/index.js'.
+
 ### 1.8.0p - 07-Fev-2024
 
 Web Log:

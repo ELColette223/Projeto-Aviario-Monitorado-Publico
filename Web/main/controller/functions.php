@@ -1,6 +1,6 @@
 <?php
-
-include_once (__DIR__ . "/../config.php");
+define('PAM', true);
+include (__DIR__ . "/../config.php");
 
 // Verifica se a autenticação do token está desativada
 if (TOKEN_API_STATUS == false) {

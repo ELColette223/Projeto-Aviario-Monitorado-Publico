@@ -6,11 +6,12 @@
  *
  * Para configurar o cron job, use:
  * 0 * * * * /usr/bin/php /scripts/collect_data.php?key=TOKENSUPERSEGURO
- * 
+ *
  * Versão: 1.3.0
  */
 
-require_once "../config.php";
+define('PAM', true);
+require "../config.php";
 
 // Verifica se a requisição chega por meio de GET
 if ($_SERVER["REQUEST_METHOD"] !== "GET") {
