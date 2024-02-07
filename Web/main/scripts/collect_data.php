@@ -11,7 +11,7 @@
  */
 
 define('PAM', true);
-require "../config.php";
+require_once "../config.php";
 
 // Verifica se a requisição chega por meio de GET
 if ($_SERVER["REQUEST_METHOD"] !== "GET") {
