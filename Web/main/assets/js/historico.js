@@ -227,66 +227,65 @@ window.onclick = function(event) {
     }
 }
 
-window.exportData = function() {
-    if (server_stauts === true) {
-        if (window.confirm('Deseja exportar os dados: "Dados_do_Sensor_Histórico-' + moment(new Date()).format("DD/MM/YYYY") + ".png" + "?")) {                
-            const data = tempHumidityChart.toBase64Image();
+window.exportData = async function(fileType) {
+    if (!server_stauts) {
+        notyf.error('Erro ao exportar dados! Servidor Offline!');
+        return;
+    }
 
+    const dateFormat = moment(new Date()).format(fileType === 'png' ? "DD/MM/YYYY" : "DD-MM-YYYY");
+    const confirmMessage = `Deseja exportar os dados: "Dados_do_Sensor_Histórico-${dateFormat}.${fileType}"?`;
+
+    if (!window.confirm(confirmMessage)) {
+        notyf.error('Operação cancelada!');
+        return;
+    }
+
+    try {
+        if (fileType === 'png') {
+            const data = tempHumidityChart.toBase64Image();
             const link = document.createElement('a');
             link.href = data;
-            link.download = "Dados_do_Sensor_Histórico-" + moment(new Date()).format("DD/MM/YYYY") + ".png";
+            link.download = `Dados_do_Sensor_Histórico-${dateFormat}.png`;
             link.click();
-            notyf.success('Dados exportados com sucesso!'); // notyf
-        } else {
-            notyf.error('Operação cancelada!'); // notyf
-        }
-    } else {
-        notyf.error('Erro ao exportar dados!'); // notyf
-    }
-};
+            notyf.success('Dados exportados com sucesso!');
+        } else if (fileType === 'xlsx') {
+            const response = await axios.get(apiURL);
+            const rawData = response.data;
 
-window.exportDataXlsx = async function() {
-    if (server_stauts === true) {
-        try {
-            if (window.confirm('Deseja exportar os dados: "Dados_do_Sensor_Histórico-' + moment(new Date()).format("DD-MM-YYYY") + ".xlsx" + "?")) {   
-                const response = await axios.get(apiURL);
-                const rawData = response.data;
+            let worksheet_data = [];
+            const header = ["Data", "Sensor ID", "Temperatura", "Umidade"];
+            worksheet_data.push(header);
 
-                let worksheet_data = [];
-                const header = ["Data", "Sensor ID", "Temperatura", "Umidade"];
-                worksheet_data.push(header);
+            for (const key in rawData) {
+                const entry = rawData[key];
+                const date = entry.time.data;
 
-                for (const key in rawData) {
-                    const entry = rawData[key];
-                    const date = entry.time.data;
-
-                    for (const sensorId in entry.sensors) {
-                        const sensorData = entry.sensors[sensorId];
-                        const row = [
-                            date,
-                            sensorId + ", " + (sensorPrefixes[sensorId] || ""),
-                            sensorData.temperatura || "N/A",
-                            sensorData.umidade || "N/A"
-                        ];
-                        worksheet_data.push(row);
-                    }
-
-                    worksheet_data.push([]);
+                for (const sensorId in entry.sensors) {
+                    const sensorData = entry.sensors[sensorId];
+                    const row = [
+                        date,
+                        sensorId + ", " + (sensorPrefixes[sensorId] || ""),
+                        sensorData.temperatura || "N/A",
+                        sensorData.umidade || "N/A"
+                    ];
+                    worksheet_data.push(row);
                 }
 
-                const worksheet = XLSX.utils.aoa_to_sheet(worksheet_data);
-                const workbook = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(workbook, worksheet, "Dados do Sensor");
-                XLSX.writeFile(workbook, "Dados_do_Sensor_Histórico-" + moment(new Date()).format("DD-MM-YYYY") + ".xlsx");
-                notyf.success('Dados exportados com sucesso!'); // notyf
-            } else {
-                notyf.error('Operação cancelada!'); // notyf
+                worksheet_data.push([]);
             }
-        } catch (error) {
-            notyf.error('Erro ao exportar dados!'); // notyf
+
+            const worksheet = XLSX.utils.aoa_to_sheet(worksheet_data);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "Dados do Sensor");
+            XLSX.writeFile(workbook, `Dados_do_Sensor_Histórico-${dateFormat}.xlsx`);
+            notyf.success('Dados exportados com sucesso!');
+        } else {
+            notyf.error('Formato de arquivo não suportado!');
         }
-    } else {
-        notyf.error('Erro ao exportar dados!'); // notyf
+    } catch (error) {
+        console.error('Erro ao exportar dados:', error);
+        notyf.error('Erro ao exportar dados!');
     }
 };
 

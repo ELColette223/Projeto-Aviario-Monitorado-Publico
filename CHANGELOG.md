@@ -1,5 +1,10 @@
 ## Changelog
 
+### 1.8.2p - 07-Fev-2024
+
+Web Log:
+- Correção: Bugs e JavaScript.
+
 ### 1.8.1p - 07-Fev-2024
 
 Web Log:

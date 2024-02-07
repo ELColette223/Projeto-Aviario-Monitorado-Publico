@@ -1,53 +1,38 @@
 let bridgeURL = '';
 let notyf;
 let apiWasOffline = false;
+let sensorChart;
+let serverStatus = false;
 
 document.addEventListener('DOMContentLoaded', function() {
     notyf = new Notyf({
-        duration: 3500,
-        position: {
-            x: 'right',
-            y: 'bottom',
-        },
-        types: [
-            {
-                type: 'warning',
-                background: 'orange',
-                icon: {
-                    className: 'fa-solid fa-triangle-exclamation',
-                    tagName: 'i',
-                    color: '#fff'
-                }
-            },
-        ]
+        duration: 4000,
+        position: { x: 'right', y: 'bottom' },
+        types: [{
+            type: 'warning',
+            background: 'orange',
+            icon: {
+                className: 'fa-solid fa-triangle-exclamation',
+                tagName: 'i',
+                color: '#fff'
+            }
+        }]
     });
+
+    Chart.defaults.font.family = 'Montserrat, sans-serif';
+    Chart.defaults.font.style = 'normal';
+    Chart.defaults.font.weight = 'bold';
 
     setupEventListeners();
     initializeChart();
 });
 
-let sensorChart;
-
-Chart.defaults.font.family = 'Montserrat, sans-serif';
-Chart.defaults.font.style = 'normal';
-Chart.defaults.font.weight = 'bold';
-
-server_stauts = false;
-
 function initializeChart() {
     const sensorChartElement = document.getElementById('sensorChart');
-    if (!sensorChartElement) return;
-
-    setupChart(sensorChartElement);
-    setupExportFunctions();
-    adjustChartHeight(sensorChartElement);
-}
-
-function setupChart(sensorChartElement) {
-    window.resetZoom = resetZoom;
+    if (!sensorChartElement) return console.error('Element not found:', sensorChartElement);
     
     const ctx = sensorChartElement.getContext('2d');
-    const sensorChart = new Chart(ctx, {
+    sensorChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: [],
@@ -64,133 +49,127 @@ function setupChart(sensorChartElement) {
             }]
         },
         options: {
-            layout: {
-                padding: {
-                    left: 25, // Para evitar bug da data desaparecendo
-                    right: 25
-                }
-            },
-            interaction: {
-                mode: 'nearest',
-                intersect: false,
-                axis: 'x'
-            },
+            layout: { padding: { left: 25, right: 25 } },
+            interaction: { mode: 'nearest', intersect: false, axis: 'x' },
             scales: {
-                x: {
-                    reverse: true,
-                },
+                x: { reverse: true },
                 y: {
-                    ticks:{
-                        color: '#FF6384'
-                    },
+                    ticks: { color: '#FF6384' },
                     type: 'linear',
                     display: true,
                     position: 'left',
                     id: 'y-temperatura',
-                    min: 10, // Valor mínimo
-                    max: 100, // Valor máximo
+                    min: 10,
+                    max: 100,
                 },
                 y1: {
-                    ticks:{
-                        color: '#36A2EB'
-                    },
+                    ticks: { color: '#36A2EB' },
                     type: 'linear',
                     display: true,
                     position: 'right',
                     id: 'y-umidade',
-                    min: 10, // Valor mínimo
-                    max: 100, // Valor máximo
-                    grid: {
-                        drawOnChartArea: false,
-                    },
+                    min: 10,
+                    max: 100,
+                    grid: { drawOnChartArea: false },
                 },
             },
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        zoom: {
-                            pan: {
-                                enabled: false,
-                                mode: 'x',
-                            },
-                            zoom: {
-                                pinch: {
-                                    enabled: false,
-                                },
-                                drag: {
-                                    enabled: false,
-                                },
-                                wheel: {
-                                    enabled: false,
-                                },
-                                mode: 'xy',
-                                sensitivity: 2,
-                                speed: 5
-                            },
-                        },
-                    },
-                },
-            });
+            responsive: true,
+            maintainAspectRatio: false
+        },
+    });
 
-    function resetZoom() {
-        sensorChart.resetZoom();
-    }
-
-    function applyZoom(scaleFactor) {
-        const minZoom = 1;
-        const maxZoom = 10;
-        let currentZoom = sensorChart.options.scales.x.zoom;
-
-        currentZoom = Math.max(minZoom, Math.min(maxZoom, currentZoom * scaleFactor));
-
-        sensorChart.options.scales.x.zoom = currentZoom;
-        sensorChart.update();
-    }
+    window.exportData = function(fileType) {
+        const dateFormat = moment(new Date()).format("DD-MM-YYYY");
+        if (!window.confirm(`Deseja exportar os dados: "Dados_do_Sensor-${dateFormat}.${fileType}"?`)) {
+            notyf.error('Operação cancelada!');
+            return;
+        }
     
-    function fetchData() {
-        const url = `api.php`;
-        fetch(url, {
-                Headers: {
-                    'Cache-Control': 'no-cache, no-store, must-revalidate',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                updateChart(data);
-                server_stauts = true;
-            })
-            .catch(error => {
-                console.error('Error fetching data:', error);
-            });
-    }
-    fetchData();
+        try {
+            if (fileType === 'png') {
+                const data = sensorChart.toBase64Image();
+                const link = document.createElement('a');
+                link.href = data;
+                link.download = `Dados_do_Sensor-${dateFormat}.png`;
+                link.click();
+                notyf.success('Dados exportados com sucesso!');
+            } else if (fileType === 'xlsx') {
+                const datasets = sensorChart.data.datasets;
+                let worksheet_data = [];
+                const labels = sensorChart.data.labels;
+                const header = ["Data", ...datasets.map(dataset => dataset.label)];
+                worksheet_data.push(header);
+    
+                labels.forEach((label, index) => {
+                    const row = [label, ...datasets.map(dataset => dataset.data[index] || '')];
+                    worksheet_data.push(row);
+                });
+    
+                const worksheet = XLSX.utils.aoa_to_sheet(worksheet_data);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Dados do Sensor");
+    
+                XLSX.writeFile(workbook, `Dados_do_Sensor-${dateFormat}.xlsx`);
+                notyf.success('Dados exportados com sucesso!');
+            } else {
+                notyf.error('Formato de arquivo não suportado!');
+            }
+        } catch (error) {
+            notyf.error('Erro ao exportar dados!');
+            console.error('Export Error:', error);
+        }
+    };    
 
-    function formatDate(dateString) {
-        return new Date(dateString).toISOString().split('T')[0];
-    }
-
-    function updateChart(data) {
-        sensorChart.data.labels = data.labels.map(label => formatDate(label));
-        sensorChart.data.datasets[0].data = data.temperatures.map(temp => parseFloat(temp) || null);
-        sensorChart.data.datasets[1].data = data.humidities.map(hum => parseFloat(hum.replace('%', '')) || null);
-
-        sensorChart.data.datasets.forEach(dataset => {
-            dataset.data = dataset.data.filter(value => value !== null);
-        });
-
-        sensorChart.update();
-    }
+    fetchDataAndUpdateChart();
 }
 
-function calculateAspectRatioHeight(sensorChartElement) {
-    const width = sensorChartElement.clientWidth;
-    const aspectRatio = 1;
-    return width / aspectRatio;
+function fetchDataAndUpdateChart() {
+    const url = `api.php`;
+    fetch(url, {
+        Headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        updateChart(data);
+        serverStatus = true;
+    })
+    .catch(error => console.error('Error fetching data:', error));
 }
 
-function adjustChartHeight(sensorChartElement) {
-    const chartHeight = calculateAspectRatioHeight(sensorChartElement);
-    sensorChartElement.style.height = `${chartHeight}px`;
+function updateChart(data) {
+    if (!sensorChart) return;
+    sensorChart.data.labels = data.labels.map(label => new Date(label).toISOString().split('T')[0]);
+    sensorChart.data.datasets[0].data = data.temperatures.map(temp => parseFloat(temp) || null);
+    sensorChart.data.datasets[1].data = data.humidities.map(hum => parseFloat(hum.replace('%', '')) || null);
+
+    sensorChart.update();
+}
+
+function setupEventListeners() {
+    const actions = [
+        { id: 'increaseFont', change: 1, reset: false },
+        { id: 'decreaseFont', change: -1, reset: false },
+        { id: 'resetFont', change: 0, reset: true }
+    ];
+
+    actions.forEach(({ id, change, reset }) => {
+        const button = document.getElementById(id);
+        if (button) {
+            button.addEventListener('click', () => changeFontSize(change, reset));
+        }
+    });
+}
+
+function changeFontSize(change, reset = false) {
+    const elements = document.querySelectorAll('span');
+    elements.forEach(element => {
+        if (reset) {
+            element.style.fontSize = '';
+        } else {
+            const currentSize = parseFloat(window.getComputedStyle(element).getPropertyValue('font-size'));
+            element.style.fontSize = `${currentSize + change}px`;
+        }
+    });
 }
 
 function setupEventListeners() {
@@ -225,7 +204,7 @@ window.addEventListener('load', async () => {
     await fetchAPIBridgeConfig();
     fetchSensorData();
     setInterval(fetchSensorData, 10000);
-});
+})
 
 var apiOffline = false;
 
@@ -234,18 +213,6 @@ function fetchSensorData() {
     fetch(url)
         .then(response => {
             if (!response.ok) {
-                if (response.status === 500) {
-                    response.json().then(data => {
-                        if (data.hasOwnProperty('success') && data.success === false) {
-                            if (data.hasOwnProperty('message')) {
-                                console.error('Erro:', data.message);
-                            }
-                        }
-                    }).catch(jsonError => {
-                        console.error('Erro ao processar JSON:', jsonError);
-                        throw new Error('Erro interno do servidor (500), resposta não é JSON!');
-                    });
-                }
                 throw new Error('Network response was not ok');
             }
             return response.json();
@@ -269,64 +236,6 @@ function fetchSensorData() {
             handleError(error);
             apiWasOffline = true;
         });
-}
-
-function setupExportFunctions() {
-    window.exportData = exportData;
-    window.exportDataXlsx = exportDataXlsx;
-}
-
-function exportData() {
-    window.exportData = function() {
-        if (server_stauts === true) {
-            if (window.confirm('Deseja exportar os dados: "Dados_do_Sensor-' + moment(new Date()).format("DD/MM/YYYY") + ".png" + "?")) {     
-                const data = sensorChart.toBase64Image();
-                const link = document.createElement('a');
-                link.href = data;
-                link.download = 'Dados_do_Sensor-' + moment(new Date()).format("DD/MM/YYYY") + '.png';
-                link.click();
-                notyf.success('Dados exportados com sucesso!'); // notyf
-            } else {
-                notyf.error('Operação cancelada!'); // notyf
-            }
-        } else {
-            notyf.error('Erro ao exportar dados!'); // notyf
-        }
-    };
-}
-
-function exportDataXlsx() {
-    window.exportDataXlsx = function() {
-        if (server_stauts === true) {
-            try {
-                if (window.confirm('Deseja exportar os dados: "Dados_do_Sensor-' + moment(new Date()).format("DD-MM-YYYY") + ".xlsx" + "?")) {   
-                    const datasets = sensorChart.data.datasets;
-                    let worksheet_data = [];
-                    const labels = sensorChart.data.labels;
-                    const header = ["Data", ...datasets.map(dataset => dataset.label)];
-                    worksheet_data.push(header);
-        
-                    labels.forEach((label, index) => {
-                        const row = [label, ...datasets.map(dataset => dataset.data[index] || '')];
-                        worksheet_data.push(row);
-                    });
-        
-                    const worksheet = XLSX.utils.aoa_to_sheet(worksheet_data);
-                    const workbook = XLSX.utils.book_new();
-                    XLSX.utils.book_append_sheet(workbook, worksheet, "Dados do Sensor");
-        
-                    XLSX.writeFile(workbook, "Dados_do_Sensor-" + moment(new Date()).format("DD-MM-YYYY") + ".xlsx");
-                    notyf.success('Dados exportados com sucesso!'); // notyf
-                } else {
-                    notyf.error('Operação cancelada!'); // notyf
-                }
-            } catch (error) {
-                notyf.error('Erro ao exportar dados!'); // notyf
-            }
-        } else {
-            notyf.error('Erro ao exportar dados!'); // notyf
-        }
-    };
 }
 
 function updateSensorData(elementId, value) {
@@ -357,22 +266,6 @@ function changeFontSize(change) {
     elements.forEach(element => {
         const currentSize = parseFloat(window.getComputedStyle(element, null).getPropertyValue('font-size'));
         element.style.fontSize = `${currentSize + change}px`;
-    });
-}
-
-function increaseFontSize() {
-    const elements = document.querySelectorAll('span');
-    elements.forEach(element => {
-        const currentSize = parseFloat(window.getComputedStyle(element, null).getPropertyValue('font-size'));
-        element.style.fontSize = (currentSize + 1) + 'px';
-    });
-}
-
-function decreaseFontSize() {
-    const elements = document.querySelectorAll('span');
-    elements.forEach(element => {
-        const currentSize = parseFloat(window.getComputedStyle(element, null).getPropertyValue('font-size'));
-        element.style.fontSize = (currentSize - 1) + 'px';
     });
 }
 
@@ -459,7 +352,7 @@ function hideLoader() {
 }
 
 function handleError(error) {
-    console.error('Erro ao buscar dados:', error);
+    console.error('Erro ao buscar dados:', error, bridgeURL);
     displayError();
     hideLoader();
 
@@ -506,20 +399,4 @@ window.onclick = function(event) {
 function togglePopup() {
     var popup = document.getElementById("exportPopup");
     popup.classList.toggle("show");
-}
-
-function increaseFontSize() {
-    const elements = document.querySelectorAll('span');
-    elements.forEach(element => {
-        const currentSize = parseFloat(window.getComputedStyle(element, null).getPropertyValue('font-size'));
-        element.style.fontSize = (currentSize + 1) + 'px';
-    });
-}
-
-function decreaseFontSize() {
-    const elements = document.querySelectorAll('span');
-    elements.forEach(element => {
-        const currentSize = parseFloat(window.getComputedStyle(element, null).getPropertyValue('font-size'));
-        element.style.fontSize = (currentSize - 1) + 'px';
-    });
 }
