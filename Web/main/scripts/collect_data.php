@@ -6,9 +6,11 @@
  *
  * Para configurar o cron job, use:
  * 0 * * * * /usr/bin/php /scripts/collect_data.php?key=TOKENSUPERSEGURO
+ * 
+ * Versão: 1.3.0
  */
 
-include "../config.php";
+require_once "../config.php";
 
 // Verifica se a requisição chega por meio de GET
 if ($_SERVER["REQUEST_METHOD"] !== "GET") {
@@ -51,8 +53,8 @@ try {
     die();
 }
 
-// Define a URL do ESP
-$url = ESP_URL;
+// Define a URL da API de coleta de dados
+$url = API_URL_COLLECT_DATA;
 
 // Verifica se o ESP está online
 $ch = curl_init($url);
@@ -70,29 +72,35 @@ if ($httpcode == 200) {
         // Verifica se os sensores S1, S2 e S3 estão presentes no JSON
         if (isset($data["S1"]) && isset($data["S2"]) && isset($data["S3"])) {
             $stmt = $conn->prepare(
-                "INSERT INTO sensor_data (sensors_json, timestamp) VALUES (:data, NOW())"
+                "INSERT INTO sensor_data_test (sensors_json, timestamp) VALUES (:data, NOW())"
             );
             $stmt->execute([
                 ":data" => $response,
             ]);
 
-            // Responde com sucesso caso os dado sejam inseridos
-            echo json_encode([
-                "success" => true,
-                "message" => "Dados inseridos.",
-                "datatime" => date("d-m-Y H:i:s"),
-                "data" => json_decode($response),
-            ]);
-            logError("SUCESSO: Dados inseridos. $response");
+            if ($stmt -> rowCount() > 0) {
+                // Responde com sucesso caso os dado sejam inseridos
+                echo json_encode([
+                    "success" => true,
+                    "message" => "Dados inseridos.",
+                    "datatime" => date("d-m-Y H:i:s"),
+                    "data" => json_decode($response),
+                ]);
+                logError("SUCESSO: Dados inseridos. $response");
+            } else {
+                echo json_encode([
+                    "success" => false,
+                    "message" => "Falha ao inserir dados.",
+                ]);
+                logError("ERRO: Falha ao inserir dados. $response");
+            }
         } else {
             echo json_encode([
                 "success" => false,
                 "message" =>
                     "JSON não contém todos os sensores necessários (S1, S2 e S3).",
             ]);
-            logError(
-                "ERRO: JSON não contém todos os sensores necessários (S1, S2 e S3)."
-            );
+            logError( "ERRO: JSON não contém todos os sensores necessários (S1, S2 e S3).");
         }
     } else {
         echo json_encode([

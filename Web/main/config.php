@@ -1,14 +1,10 @@
 <?php
+if (!defined('PAM')) { die("Acesso negado!"); } // Não permite que o arquivo seja acessado diretamente
+
 $dbHost = 'localhost';      // SUBSTITUA PELO IP DO SEU SERVIDOR
 $dbUsername = 'root';       // SUBSTITUA PELO USUÁRIO DO SEU BANCO DE DADOS
 $dbPassword = '';           // SUBSTITUA PELA SENHA DO SEU BANCO DE DADOS
 $dbName = 'aviario_teste';  // SUBSTITUA PELO NOME DO SEU BANCO DE DADOS
-
-try {
-    $conn = new PDO("mysql:host=$dbHost;dbname=$dbName", $dbUsername, $dbPassword);
-} catch (PDOException $e) {
-    die("Erro de conexão");
-}
 
 // Define o timezone. https://www.php.net/manual/en/timezones.php
 date_default_timezone_set('America/Sao_Paulo');
@@ -21,6 +17,9 @@ define("API_URL_RAW", "https://SEU_IP/api.php?raw=full");
 
 // Define a URL da Bridge
 define("API_URL_BRIDGE", "https://SEU_IP/bridge.php");
+
+// Define a URL da API de coleta de dados (usado em scripts/collect_data.php)
+define("API_URL_COLLECT_DATA", "https://SEU_IP/bridge.php?normal");
 
 // Define o limite de tentativas de conexão com o ESP
 define("MAX_RETRIES", 3);
@@ -49,4 +48,24 @@ define("TOKEN_API", "SEU_TOKEN_AQUI");
 // Define o status de segurança da coleta de dados 'collect_data.php'
 define("SECURITY_COLLECT_DATA", true);
 define("TOKEN_SECURITY_COLLECT_DATA", "SEU_TOKEN_AQUI");
+
+########### Define as credenciais de e-mail ###########
+
+// E-mail do remetente
+define("SENDER_EMAIL", "email@example.com");
+
+// E-mail do destinatário
+define("RECIPIENT_EMAIL", "destino@example.com");
+
+// Host do servidor SMTP
+define("EMAIL_HOST", "smtp.example.com");
+
+// Usuário do servidor SMTP
+define("EMAIL_USERNAME", "user@example.com");
+
+// Senha do servidor SMTP
+define("EMAIL_PASSWORD", "SUA_SENHA_AQUI");
+
+// Porta do servidor SMTP
+define("EMAIL_PORT", 465);
 ?>

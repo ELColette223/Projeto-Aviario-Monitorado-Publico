@@ -1,4 +1,6 @@
 <?php
+define('PAM', true);
+
 include 'config.php';
 
 header('Content-Type: application/json');

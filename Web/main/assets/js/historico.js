@@ -7,13 +7,13 @@ const notyf = new Notyf({
     },
     types: [
         {
-          type: 'warning',
-          background: 'orange',
-          icon: {
-            className: 'material-icons',
-            tagName: 'i',
-            text: 'warning'
-          }
+            type: 'warning',
+            background: 'orange',
+            icon: {
+                className: 'fa-solid fa-triangle-exclamation',
+                tagName: 'i',
+                color: '#fff'
+            }
         },
     ]
 });
@@ -139,7 +139,6 @@ const loadData = async () => {
         server_stauts = true;
     } catch (error) {
         console.error("Erro ao carregar dados da API:", error);
-        notyf.error('Servidor Offline!'); // notyf
         server_stauts = false;
     }
 };

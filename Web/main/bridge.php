@@ -2,7 +2,7 @@
 
 /*
  *  API para obter os dados em tempo real
- *  Versão: 1.2.3
+ *  Versão: 1.3.0p
  */
 
 header("Content-Type: application/json");
@@ -171,6 +171,29 @@ function fetchSensorData($espURL, $maxRetries = MAX_RETRIES) {
     }
 
     return null;
+}
+
+// ENTREGA OS DADOS DO SENSOR EM TEMPO REAL SEM A MÉDIA
+function getSensorDataWithoutAverage($clientId) {
+    $sensorData = fetchSensorData($clientId);
+    if ($sensorData) {
+        return $sensorData;
+    } else {
+        logDebug("Falha ao obter dados do MQTT!");
+        header("HTTP/1.1 500 Internal Server Error");
+        echo json_encode([
+            "success" => false,
+            "message" => "Falha ao obter dados do sensor.",
+        ]);
+        exit();
+    }
+}
+
+if (isset($_GET["normal"])) {
+    header('Content-Type: application/json; charset=utf-8');
+    $sensorData = getSensorDataWithoutAverage($clientId);
+    echo json_encode($sensorData);
+    exit();
 }
 
 // FUNÇÃO PARA VERIFICAR SE HÁ VALORES VAZIOS

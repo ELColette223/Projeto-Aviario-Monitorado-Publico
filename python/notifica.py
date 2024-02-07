@@ -46,8 +46,7 @@ def get_sensor_data_json(api_url):
                 data = response.json()
 
                 if 'success' in data and not data['success']:
-                    error_message = data.get('message', 'Erro desconhecido.')
-                    debug_print("Erro na API:", error_message)
+                    debug_print("Erro na API.")
                     debug_print("Tentando novamente em 3 segundos...")
                     time.sleep(3)
                     continue
@@ -99,9 +98,6 @@ def send_whatsapp_message(phone_number, message):
     options = Options()
     options.binary_location = PATH_CHROME_PORTABLE
     options.add_argument('--user-data-dir=' + profile_path)
-
-    phone_number = phone_number
-    message = message
 
     s = Service(PATH_CHROMEDRIVER)
     driver = webdriver.Chrome(service=s, options=options)

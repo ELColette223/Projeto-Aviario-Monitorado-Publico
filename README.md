@@ -26,15 +26,15 @@ O código do ESP32 pode ser utilizado em dispositivos semelhantes, como o ESP826
 - [x] Navegação entre históricos
 - [x] ~~App para Android (Flutter)~~ Não há necessidade, pode ser feito um atalho pelo navegador.
 - [x] Função para limpar Cache
+- [x] Melhoria na coleta de dados Cron.
+- [x] ~~Suporte MQTT Full.~~ Não disponível na versão Pública ainda.
   
 </details>
 
 - [ ] Sistema aprimorado para envio de mensagem.
 - [ ] Suporte a Linux Server.
 - [ ] Sistema de detecção de anormalidade.
-- [ ] Melhoria na coleta de dados Cron.
 - [ ] Painel Admin de Gerenciamento.
-- [ ] Suporte MQTT Full.
 
 ## Manual de Instalação
 

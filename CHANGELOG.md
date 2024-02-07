@@ -1,5 +1,23 @@
 ## Changelog
 
+### 1.8.0p - 07-Fev-2024
+
+Web Log:
+- Atualização, Correção e melhoria: Arquivos JavaScript otimizados e bugs corrigidos.
+- Atualização: Font Awesome para v6.5.1.
+- Atualização: 'collect_data.php'.
+- Melhoria: Segurança do acesso ao arquivo 'config.php'.
+- Mudança: Notyf disponibilizado localmente.
+
+- Atualização da 'collect_data.php' para v1.3.0:
+    - Mudança: Link da API para coleta de dados definida em 'config.php'.
+    - Adição: Verificação de dados inseridos.
+
+- Atualização da API Bridge para v1.3.0p:
+    - Adição: Endpoint '?normal' Retorna os dados do sensor em tempo real sem a média.
+
+- Correção de bugs.
+
 ### 1.7.3p - 24-Jan-2024
 Web Log:
 - Adição: Timezone na 'config.php'.
